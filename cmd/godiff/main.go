@@ -30,6 +30,7 @@ func run(args []string) int {
 		return exitNG
 	}
 	fmt.Fprintf(os.Stdout, "Distance: %d\n", diff.LevenshteinDistance())
+	fmt.Fprintf(os.Stdout, "LCS: %s\n", diff.LongCommonSubSeq())
 
 	return exitOK
 }
