@@ -10,9 +10,9 @@ type Diff struct {
 }
 
 func NewDiff(s1, s2 string) (*Diff, error) {
-	if len(s1) >= len(s2) { // set s2 as longer string
-		s1, s2 = s2, s1
-	}
+	// if len(s1) >= len(s2) { // set s2 as longer string
+	// 	s1, s2 = s2, s1
+	// }
 
 	return &Diff{s1, s2}, nil
 }
@@ -97,6 +97,93 @@ func assembleLCS(s1, s2 string, l [][]int, i, j int) string {
 			return assembleLCS(s1, s2, l, i, j-1)
 		} else {
 			return assembleLCS(s1, s2, l, i-1, j)
+		}
+	}
+}
+
+type Op int
+
+const (
+	cop Op = iota // copy
+	rep           // replace
+	ins           // insert
+	del           // delete
+)
+
+func (d *Diff) Transform() []string {
+	// compute transformation table
+	_, op := computeTransformTable(d.str1, d.str2) // cost for debug
+
+	// debug
+	// for i := 0; i <= len(d.str1); i++ {
+	// 	for j := 0; j < len(d.str2); j++ {
+	// 		print(cost[i][j])
+	// 		print(" ")
+	// 	}
+	// 	print(cost[i][len(d.str2)])
+	// 	println()
+	// }
+
+	ops := make([]string, 0)
+
+	// assemble transformation
+	return assembleTransform(op, d.str1, d.str2, len(d.str1), len(d.str2), ops)
+}
+
+func computeTransformTable(s1, s2 string) ([][]int, [][]Op) {
+	cost := make([][]int, len(s1)+1)
+	op := make([][]Op, len(s1)+1)
+	for i := 0; i <= len(s1); i++ {
+		cost[i] = make([]int, len(s2)+1)
+		op[i] = make([]Op, len(s2)+1)
+
+		cost[i][0] = i * 2
+		op[i][0] = del
+	}
+	for j := 0; j <= len(s2); j++ {
+		cost[0][j] = j * 2
+		op[0][j] = ins
+	}
+
+	for i := 1; i <= len(s1); i++ {
+		for j := 1; j <= len(s2); j++ {
+			// check copy or replace
+			if s1[i-1] == s2[j-1] {
+				cost[i][j] = cost[i-1][j-1] - 1
+				op[i][j] = cop
+			} else {
+				cost[i][j] = cost[i-1][j-1] + 1
+				op[i][j] = rep
+			}
+
+			if cost[i-1][j]+2 < cost[i][j] {
+				cost[i][j] = cost[i-1][j] + 2
+				op[i][j] = del
+			}
+			if cost[i][j-1]+2 < cost[i][j] {
+				cost[i][j] = cost[i][j-1] + 2
+				op[i][j] = ins
+			}
+		}
+	}
+
+	return cost, op
+}
+
+func assembleTransform(op [][]Op, s1, s2 string, i, j int, ops []string) []string {
+	if i == 0 && j == 0 {
+		return nil
+	}
+
+	if op[i][j] == cop {
+		return append(assembleTransform(op, s1, s2, i-1, j-1, ops), "copy "+string(s1[i-1]))
+	} else if op[i][j] == rep {
+		return append(assembleTransform(op, s1, s2, i-1, j-1, ops), "replace "+string(s1[i-1])+" by "+string(s2[j-1]))
+	} else {
+		if op[i][j] == del {
+			return append(assembleTransform(op, s1, s2, i-1, j, ops), "delete "+string(s1[i-1]))
+		} else { // op[i][j] == ins
+			return append(assembleTransform(op, s1, s2, i, j-1, ops), "insert "+string(s2[j-1]))
 		}
 	}
 }

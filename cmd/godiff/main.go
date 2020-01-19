@@ -31,6 +31,11 @@ func run(args []string) int {
 	}
 	fmt.Fprintf(os.Stdout, "Distance: %d\n", diff.LevenshteinDistance())
 	fmt.Fprintf(os.Stdout, "LCS: %s\n", diff.LongCommonSubSeq())
+	fmt.Fprintf(os.Stdout, "Transformation %s to %s:\n", args[0], args[1])
+	ops := diff.Transform()
+	for _, op := range ops {
+		fmt.Fprintf(os.Stdout, "\t%s\n", op)
+	}
 
 	return exitOK
 }
