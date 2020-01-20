@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"os"
 
@@ -19,6 +20,24 @@ const (
 )
 
 func run(args []string) int {
+	fs := flag.NewFlagSet(name, flag.ContinueOnError)
+	fs.SetOutput(os.Stderr)
+	fs.Usage = func() {
+		fmt.Fprintf(os.Stdout, "usage: %s str1 str2\n", name)
+		flag.PrintDefaults()
+	}
+
+	var showAll bool
+	fs.BoolVar(&showAll, "all", false, "show all info")
+	if err := fs.Parse(args); err != nil {
+		if err == flag.ErrHelp {
+			return exitOK
+		}
+		return exitNG
+	}
+
+	args = fs.Args()
+
 	if len(args) != 2 {
 		fmt.Fprintf(os.Stderr, "usage: %s str1 str2\n", name)
 		return exitNG
@@ -29,12 +48,20 @@ func run(args []string) int {
 		fmt.Fprintf(os.Stderr, "%s: %s\n", name, err)
 		return exitNG
 	}
-	fmt.Fprintf(os.Stdout, "Distance: %d\n", diff.LevenshteinDistance())
-	fmt.Fprintf(os.Stdout, "LCS: %s\n", diff.LongCommonSubSeq())
-	fmt.Fprintf(os.Stdout, "Transformation %s to %s:\n", args[0], args[1])
-	ops := diff.Transform()
-	for _, op := range ops {
-		fmt.Fprintf(os.Stdout, "\t%s\n", op)
+
+	if showAll {
+		fmt.Fprintf(os.Stdout, "Distance: %d\n", diff.LevenshteinDistance())
+		fmt.Fprintf(os.Stdout, "LCS: %s\n", diff.LongCommonSubSeq())
+		fmt.Fprintf(os.Stdout, "Transformation %s to %s:\n", args[0], args[1])
+		ops := diff.Transform()
+		for _, op := range ops {
+			fmt.Fprintf(os.Stdout, "\t%s\n", op)
+		}
+	} else {
+		diffs := diff.ShowDiff()
+		fmt.Fprintf(os.Stdout, "BEFORE: %s\n", diffs[0])
+		fmt.Fprintf(os.Stdout, "AFTER : %s\n", diffs[1])
+		fmt.Fprintf(os.Stdout, "DIFF  : %s\n", diffs[2])
 	}
 
 	return exitOK

@@ -188,6 +188,75 @@ func assembleTransform(op [][]Op, s1, s2 string, i, j int, ops []string) []strin
 	}
 }
 
+// ShowDiff .
+// show like below
+//
+//  str1: ATGATCG_GCAT_
+//  str2: _CAAT_GTGAATC
+//  diff: *++--+-+-+--+
+func (d *Diff) ShowDiff() []string {
+	// compute transformation table
+	_, op := computeTransformTable(d.str1, d.str2) // cost for debug
+
+	// assembleDiff
+	var dstr1 string
+	var dstr2 string
+	var diffs string
+	dstr1 = assembleDiffStr(op, d.str1, d.str2, len(d.str1), len(d.str2), dstr1, true)
+	dstr2 = assembleDiffStr(op, d.str1, d.str2, len(d.str1), len(d.str2), dstr2, false)
+	diffs = assembleDiff(op, d.str1, d.str2, len(d.str1), len(d.str2), diffs)
+
+	return []string{dstr1, dstr2, diffs}
+}
+
+func assembleDiffStr(op [][]Op, s1, s2 string, i, j int, ret string, before bool) string {
+	if i == 0 && j == 0 {
+		return ""
+	}
+
+	if op[i][j] == cop {
+		return assembleDiffStr(op, s1, s2, i-1, j-1, ret, before) + string(s1[i-1])
+	} else if op[i][j] == rep {
+		if before {
+			return assembleDiffStr(op, s1, s2, i-1, j-1, ret, before) + string(s1[i-1])
+		} else {
+			return assembleDiffStr(op, s1, s2, i-1, j-1, ret, before) + string(s2[j-1])
+		}
+	} else {
+		if op[i][j] == del {
+			if before {
+				return assembleDiffStr(op, s1, s2, i-1, j, ret, before)
+			} else {
+				return assembleDiffStr(op, s1, s2, i-1, j, ret, before) + "_"
+			}
+		} else { // op[i][j] == ins
+			if before {
+				return assembleDiffStr(op, s1, s2, i, j-1, ret, before) + "_"
+			} else {
+				return assembleDiffStr(op, s1, s2, i, j-1, ret, before)
+			}
+		}
+	}
+}
+
+func assembleDiff(op [][]Op, s1, s2 string, i, j int, ret string) string {
+	if i == 0 && j == 0 {
+		return ""
+	}
+
+	if op[i][j] == cop {
+		return assembleDiff(op, s1, s2, i-1, j-1, ret) + "-"
+	} else if op[i][j] == rep {
+		return assembleDiff(op, s1, s2, i-1, j-1, ret) + "+"
+	} else {
+		if op[i][j] == del {
+			return assembleDiff(op, s1, s2, i-1, j, ret) + "*"
+		} else { // op[i][j] == ins
+			return assembleDiff(op, s1, s2, i, j-1, ret) + "*"
+		}
+	}
+}
+
 func max(a, b int) int {
 	return int(math.Max(float64(a), float64(b)))
 }
