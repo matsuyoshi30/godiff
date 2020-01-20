@@ -225,7 +225,7 @@ func assembleDiffStr(op [][]Op, s1, s2 string, i, j int, ret string, before bool
 	} else {
 		if op[i][j] == del {
 			if before {
-				return assembleDiffStr(op, s1, s2, i-1, j, ret, before)
+				return assembleDiffStr(op, s1, s2, i-1, j, ret, before) + string(s1[i-1])
 			} else {
 				return assembleDiffStr(op, s1, s2, i-1, j, ret, before) + "_"
 			}
@@ -233,7 +233,7 @@ func assembleDiffStr(op [][]Op, s1, s2 string, i, j int, ret string, before bool
 			if before {
 				return assembleDiffStr(op, s1, s2, i, j-1, ret, before) + "_"
 			} else {
-				return assembleDiffStr(op, s1, s2, i, j-1, ret, before)
+				return assembleDiffStr(op, s1, s2, i, j-1, ret, before) + string(s2[j-1])
 			}
 		}
 	}
