@@ -28,7 +28,9 @@ func run(args []string) int {
 	}
 
 	var showAll bool
+	var modeWord bool
 	fs.BoolVar(&showAll, "all", false, "show all info")
+	fs.BoolVar(&modeWord, "word", false, "word")
 	if err := fs.Parse(args); err != nil {
 		if err == flag.ErrHelp {
 			return exitOK
@@ -57,11 +59,20 @@ func run(args []string) int {
 		for _, op := range ops {
 			fmt.Fprintf(os.Stdout, "\t%s\n", op)
 		}
-	} else {
+	} else if modeWord {
 		diffs := diff.ShowDiff()
 		fmt.Fprintf(os.Stdout, "BEFORE: %s\n", diffs[0])
 		fmt.Fprintf(os.Stdout, "AFTER : %s\n", diffs[1])
 		fmt.Fprintf(os.Stdout, "DIFF  : %s\n", diffs[2])
+	} else { // file
+		diffs, err := diff.ShowFileDiff()
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "%s: %s\n", name, err)
+		}
+
+		for _, d := range diffs {
+			fmt.Fprintf(os.Stdout, "%s\n", d)
+		}
 	}
 
 	return exitOK

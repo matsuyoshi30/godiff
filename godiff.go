@@ -1,7 +1,10 @@
 package godiff
 
 import (
+	"bufio"
 	"math"
+	"os"
+	"path/filepath"
 )
 
 type Diff struct {
@@ -253,6 +256,104 @@ func assembleDiff(op [][]Op, s1, s2 string, i, j int, ret string) string {
 			return assembleDiff(op, s1, s2, i-1, j, ret) + "*"
 		} else { // op[i][j] == ins
 			return assembleDiff(op, s1, s2, i, j-1, ret) + "*"
+		}
+	}
+}
+
+func (d *Diff) ShowFileDiff() ([]string, error) {
+	// open and read file dstr1 and dstr2
+	dstr1, err := readFile(d.str1)
+	if err != nil {
+		return nil, err
+	}
+	dstr2, err := readFile(d.str2)
+	if err != nil {
+		return nil, err
+	}
+
+	// compute table line by line
+	op := computeLineTable(dstr1, dstr2)
+
+	// assembleLineDiff
+	fds := make([]string, 0)
+	return assembleLineDiff(op, dstr1, dstr2, len(dstr1), len(dstr2), fds), nil
+}
+
+func readFile(path string) ([]string, error) {
+	wd, _ := os.Getwd()
+	filepath := filepath.Join(wd, path)
+
+	file, err := os.Open(filepath)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+
+	line := make([]string, 0)
+
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		line = append(line, scanner.Text())
+	}
+
+	return line, nil
+}
+
+func computeLineTable(s1, s2 []string) [][]Op {
+	cost := make([][]int, len(s1)+1)
+	op := make([][]Op, len(s1)+1)
+	for i := 0; i <= len(s1); i++ {
+		cost[i] = make([]int, len(s2)+1)
+		op[i] = make([]Op, len(s2)+1)
+
+		cost[i][0] = i * 2
+		op[i][0] = del
+	}
+	for j := 0; j <= len(s2); j++ {
+		cost[0][j] = j * 2
+		op[0][j] = ins
+	}
+
+	for i := 1; i <= len(s1); i++ {
+		for j := 1; j <= len(s2); j++ {
+			// check copy or replace
+			if s1[i-1] == s2[j-1] {
+				cost[i][j] = cost[i-1][j-1] - 1
+				op[i][j] = cop
+			} else {
+				cost[i][j] = cost[i-1][j-1] + 1
+				op[i][j] = rep
+			}
+
+			if cost[i-1][j]+2 < cost[i][j] {
+				cost[i][j] = cost[i-1][j] + 2
+				op[i][j] = del
+			}
+			if cost[i][j-1]+2 < cost[i][j] {
+				cost[i][j] = cost[i][j-1] + 2
+				op[i][j] = ins
+			}
+		}
+	}
+
+	return op
+}
+
+func assembleLineDiff(op [][]Op, s1, s2 []string, i, j int, fds []string) []string {
+	if i == 0 && j == 0 {
+		return nil
+	}
+
+	if op[i][j] == cop {
+		return append(assembleLineDiff(op, s1, s2, i-1, j-1, fds), "= "+string(s1[i-1]))
+	} else if op[i][j] == rep {
+		fds = append(fds, "- "+string(s1[i-1]))
+		return append(assembleLineDiff(op, s1, s2, i-1, j-1, fds), "+ "+string(s2[j-1]))
+	} else {
+		if op[i][j] == del {
+			return append(assembleLineDiff(op, s1, s2, i-1, j, fds), "- "+string(s1[i-1]))
+		} else { // op[i][j] == ins
+			return append(assembleLineDiff(op, s1, s2, i, j-1, fds), "+ "+string(s2[j-1]))
 		}
 	}
 }
