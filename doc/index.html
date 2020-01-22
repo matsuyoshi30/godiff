@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>Go Diff</title>
+    <script src="wasm_exec.js" type="text/javascript"></script>
+    <script type="text/javascript">
+      const go = new Go();
+      WebAssembly.instantiateStreaming(fetch("main.wasm"), go.importObject).then((result) => {
+        go.run(result.instance);
+      });
+    </script>
+  </head>
+  <body>
+    <div class="input">
+      <input type="text" id="input1" rows="5"/>
+      <input type="text" id="input2" rows="5"/>
+    </div>
+    <div class="output">
+      <div id="output1"></div>
+      <div id="output2"></div>
+      <div id="output3"></div>
+    </div>
+    <button onclick="showDiff()">Diff</button>
+  </body>
+</html>
