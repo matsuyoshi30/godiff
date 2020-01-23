@@ -2,6 +2,8 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <title>Go Diff</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="style.css" />
     <script src="wasm_exec.js" type="text/javascript"></script>
     <script type="text/javascript">
       const go = new Go();
@@ -12,13 +14,20 @@
   </head>
   <body>
     <div class="input">
-      <input type="text" id="input1" rows="5"/>
-      <input type="text" id="input2" rows="5"/>
+      <textarea id="input1" rows="5">The Left Text.</textarea>
+      <textarea id="input2" rows="5">The Right Text!</textarea>
     </div>
     <div class="output">
-      <div id="output1"></div>
-      <div id="output2"></div>
-      <div id="output3"></div>
+      <table>
+        <tbody id="output1">
+          <tr><th></th></tr>
+        </tbody>
+      </table>
+      <table>
+        <tbody id="output2">
+          <tr><th></th></tr>
+        </tbody>
+      </table>
     </div>
     <button onclick="showDiff()">Diff</button>
   </body>
