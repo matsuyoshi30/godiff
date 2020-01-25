@@ -11,9 +11,10 @@ $ go get -u github.com/matsuyoshi30/godiff/cmd/godiff
 ### Usage
 
 ```sh
-$ godiff ATGATCGGCAT CAATGTGAATC
-BEFORE: ATGATCGGCAT_
-AFTER : _CAATGTGAATC
-DIFF  : *++--++-+--*
-
+$ godiff testdata/test1 testdata/test2
+= abcde
++ a
++ fffff
 ```
+
+[web](https://matsuyoshi30.github.io/godiff/)
