@@ -25,3 +25,10 @@ table {
     display: flex;
     border: none;
 }
+
+em {
+    font-style: normal;
+    font-weight: bold;
+    color: black;
+    background: lightblue;
+}

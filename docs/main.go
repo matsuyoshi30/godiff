@@ -10,6 +10,9 @@ import (
 
 func showDiff(this js.Value, i []js.Value) interface{} {
 	document := js.Global().Get("document")
+
+	clearTable()
+
 	input1 := document.Call("getElementById", "input1")
 	input2 := document.Call("getElementById", "input2")
 
@@ -24,27 +27,70 @@ func showDiff(this js.Value, i []js.Value) interface{} {
 		setDiff(d)
 	}
 
-	// TODO: implement show diff when len(str1) is different from len(str2)
-	// currently only use for same length str1 and str2
+	if scanner1.Scan() {
+		d, _ := godiff.NewDiff(scanner1.Text(), "")
+		setDiff(d)
+		for scanner1.Scan() {
+			d, _ := godiff.NewDiff(scanner1.Text(), "")
+			setDiff(d)
+		}
+	} else if scanner2.Scan() {
+		d, _ := godiff.NewDiff("", scanner2.Text())
+		setDiff(d)
+		for scanner2.Scan() {
+			d, _ := godiff.NewDiff("", scanner2.Text())
+			setDiff(d)
+		}
+	}
 
 	return nil
 }
 
-func setDiff(d *godiff.Diff) {
+func clearTable() {
 	document := js.Global().Get("document")
 
-	diffs := d.ShowDiff()
-	td1 := document.Call("createElement", "td")
-	td1.Set("innerHTML", diffs[0])
-	tr1 := document.Call("createElement", "tr")
-	tr1.Call("appendChild", td1)
-	document.Call("getElementById", "output1").Call("appendChild", tr1)
-	td2 := document.Call("createElement", "td")
-	td2.Set("innerHTML", diffs[1])
-	tr2 := document.Call("createElement", "tr")
-	tr2.Call("appendChild", td2)
-	document.Call("getElementById", "output2").Call("appendChild", tr2)
+	th := document.Call("createElement", "th")
+	tr := document.Call("createElement", "tr")
+	tr.Call("appendChild", th)
 
+	out1 := document.Call("getElementById", "output1")
+	out1.Set("textContent", "")
+	out1.Call("appendChild", tr)
+	out2 := document.Call("getElementById", "output2")
+	out2.Set("textContent", "")
+	out2.Call("appendChild", tr)
+}
+
+func setDiff(d *godiff.Diff) {
+	diffs := d.ShowDiff()
+
+	lstr := emphasisStr(diffs[0], diffs[2])
+	appendTableData("output1", lstr)
+	rstr := emphasisStr(diffs[1], diffs[2])
+	appendTableData("output2", rstr)
+}
+
+func emphasisStr(s, diff string) string {
+	var retStr string
+	for i := 0; i < len(s); i++ {
+		if diff[i] != '-' {
+			retStr += "<em>" + string(s[i]) + "</em>"
+		} else {
+			retStr += string(s[i])
+		}
+	}
+	return retStr
+}
+
+func appendTableData(id, s string) {
+	document := js.Global().Get("document")
+
+	td := document.Call("createElement", "td")
+	td.Set("innerHTML", s)
+	tr := document.Call("createElement", "tr")
+	tr.Set("className", "data"+id)
+	tr.Call("appendChild", td)
+	document.Call("getElementById", id).Call("appendChild", tr)
 }
 
 func registerCallbacks() {
