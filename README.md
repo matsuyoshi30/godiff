@@ -17,4 +17,4 @@ $ godiff testdata/test1 testdata/test2
 + fffff
 ```
 
-[web](https://matsuyoshi30.github.io/godiff/)
+[web](https://matsuyoshi30.net/godiff/)

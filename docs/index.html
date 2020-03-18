@@ -13,26 +13,28 @@
     </script>
   </head>
   <body>
-    <div class="input">
-      <textarea id="input1" rows="5">The Left Text.
-This is the left sentence.
-      </textarea>
-      <textarea id="input2" rows="5">The Right Text!
-That si het right sentense.
-      </textarea>
+    <div class="container">
+      <div class="input">
+        <textarea id="input1" rows="5">The Left Text.
+        This is the left sentence.
+        </textarea>
+        <textarea id="input2" rows="5">The Right Text!
+        That si het right sentense.
+        </textarea>
+      </div>
+      <div class="output">
+        <table>
+          <tbody id="output1">
+            <tr><th></th></tr>
+          </tbody>
+        </table>
+        <table>
+          <tbody id="output2">
+            <tr><th></th></tr>
+          </tbody>
+        </table>
+      </div>
+      <button onclick="showDiff()">Diff</button>
     </div>
-    <div class="output">
-      <table>
-        <tbody id="output1">
-          <tr><th></th></tr>
-        </tbody>
-      </table>
-      <table>
-        <tbody id="output2">
-          <tr><th></th></tr>
-        </tbody>
-      </table>
-    </div>
-    <button onclick="showDiff()">Diff</button>
   </body>
 </html>
